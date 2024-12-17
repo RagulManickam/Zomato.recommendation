@@ -7,7 +7,7 @@ Original file is located at
     https://colab.research.google.com/drive/1KiIm0ocwASBeYMrdre-HRye_NPfxo0dn
 """
 
-    #MODEL DEVELOPED
+#MODEL DEVELOPED
 
 import streamlit as st
 import pandas as pd
@@ -42,12 +42,16 @@ def load_and_preprocess_data(file_paths):
     df['cuisines'] = df['cuisines'].fillna('Unknown')
 
     # Encode categorical features
-    le = LabelEncoder()
-    df['city_encoded'] = le.fit_transform(df['city'])
-    df['locality_encoded'] = le.fit_transform(df['locality'])
-    df['cuisines_encoded'] = le.fit_transform(df['cuisines'])
+    le_city = LabelEncoder()
+    df['city_encoded'] = le_city.fit_transform(df['city'])
 
-    return df
+    le_locality = LabelEncoder()
+    df['locality_encoded'] = le_locality.fit_transform(df['locality'])
+
+    le_cuisines = LabelEncoder()
+    df['cuisines_encoded'] = le_cuisines.fit_transform(df['cuisines'])
+
+    return df, le_city, le_locality, le_cuisines
 
 file_paths = [
     "C:/Users/rahul/OneDrive/Desktop/final project csv/file1.csv",
@@ -56,9 +60,7 @@ file_paths = [
     "C:/Users/rahul/OneDrive/Desktop/final project csv/file4.csv",
     "C:/Users/rahul/OneDrive/Desktop/final project csv/file5.csv"
 ]
-df = load_and_preprocess_data(file_paths)
-
-from sklearn.model_selection import train_test_split
+df, le_city, le_locality, le_cuisines = load_and_preprocess_data(file_paths)
 
 # Build model
 def train_model(df):
@@ -84,8 +86,10 @@ def recommend(location, cuisine, top_n=5):
     recommended = filtered.sort_values(by='aggregate_rating', ascending=False).head(top_n)
     return recommended[['name', 'address', 'aggregate_rating', 'average_cost_for_two']]
 
+# Train the model
+model, X_test, y_test = train_model(df)
 
-         #WEB APPLICATION
+# WEB APPLICATION
 st.title("Zomato Recommendation and Price Prediction")
 
 st.header("Restaurant Recommendation")
@@ -126,6 +130,7 @@ st.bar_chart(df['average_cost_for_two'])
 
 st.subheader("Top 10 Cuisines")
 st.bar_chart(df['cuisines'].value_counts().head(10))
+
 
 
 
